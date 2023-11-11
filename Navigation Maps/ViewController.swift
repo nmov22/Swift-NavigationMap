@@ -13,16 +13,14 @@ import AVFoundation
 class ViewController: UIViewController {
 
   @IBOutlet weak var mapView: MKMapView!
-
-  private let lat: String = "14.5511196"
-  private let lng: String = "121.0242031"
+  
+  private let lat: String = "1.2919882974140697"
+  private let lng: String = "103.83967638220878"
 
   private let locationManager = CLLocationManager()
 
   private var isMapLoaded: Bool = false
   private var timer = Timer()
-//  var currentLocation: CLLocationCoordinate2D?
-//  var previousLocation: CLLocationCoordinate2D?
   private var myLocationAnnotation = MKPointAnnotation()
   private var instruction: String = "" {
     didSet {
@@ -30,29 +28,36 @@ class ViewController: UIViewController {
     }
   }
   private var distance: Int = 0
+  private var enabled: Bool = false {
+    didSet {
+      if enabled {
+        locationManager.startUpdatingLocation()
+        accessLocation()
+      }
+    }
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
-    mapView.isHidden = true
-    accessLocation()
-
+    
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest
+    locationManager.delegate = self
+    locationManager.requestWhenInUseAuthorization()
   }
 
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
-    if CLLocationManager.locationServicesEnabled() {
-      locationManager.startUpdatingLocation()
+    DispatchQueue.global().async {
+      self.enabled = CLLocationManager.locationServicesEnabled()
     }
   }
 
   private func accessLocation() {
-    guard CLLocationManager.locationServicesEnabled() else {
-      return
+    DispatchQueue.global().async {
+      guard CLLocationManager.locationServicesEnabled() else {
+        return
+      }
     }
-    locationManager.delegate = self
-    locationManager.desiredAccuracy = kCLLocationAccuracyBest
-    locationManager.requestAlwaysAuthorization()
   }
 
   private func updateMap(route: MKRoute, animated: Bool) {
